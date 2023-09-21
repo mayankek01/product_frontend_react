@@ -76,11 +76,11 @@ function ProductList(props) {
 
     const fetchProducts = async () => {
         try {
-            const res = await axios.get("https://dummyjson.com/products")
+            const res = await axios.get("http://localhost:3000/product/all")
             if (res.status !== 200) {
                 throw new Error('Unexpected Server Error');
             }
-            const data = res.data.products
+            const data = res.data
             setProducts(data)
         } catch (error) {
             console.log(error)
@@ -92,7 +92,7 @@ function ProductList(props) {
     }, []);
 
     function deleteProduct(id) {
-        fetch("https://dummyjson.com/products/" + id, {
+        fetch("http://localhost:3000/product/deletebyid/" + id, {
             method: "DELETE"
            
         })
@@ -114,7 +114,7 @@ function ProductList(props) {
                         <th>Title</th>
                         <th>Description</th>
                         <th>Price</th>
-                        <th>DiscountPercentage</th>
+                        <th>Discount</th>
                         <th>Rating</th>
                         <th>Stock</th>
                         <th>Brand</th>
@@ -126,11 +126,11 @@ function ProductList(props) {
                         products.map((product, index) => {
                             return (
                                 <tr key={index}>
-                                    <td>{product.id}</td>
+                                    <td>{product._id}</td>
                                     <td>{product.title}</td>
                                     <td>{product.description}</td>
                                     <td>{product.price}$</td>
-                                    <td>{product.discountPercentage}</td>
+                                    <td>{product.discount}</td>
                                     <td>{product.rating}</td>
                                     <td>{product.stock}</td>
                                     <td>{product.brand}</td>
@@ -139,7 +139,7 @@ function ProductList(props) {
                                     <td style={{ width: "10px", whiteSpace: "nowrap" }}>
 
                                         <button onClick={() => props.showForm(product)} type="button" className="btn btn-primary btn-sm me-2">Edit</button>
-                                        <button onClick={() => deleteProduct(product.id)} type="button" className="btn btn-danger btn-sm">Delete</button>
+                                        <button onClick={() => deleteProduct(product._id)} type="button" className="btn btn-danger btn-sm">Delete</button>
 
                                     </td>
 
@@ -160,7 +160,13 @@ function ProductForm(props) {
 
         const formData = new FormData(event.target);
         const product = Object.fromEntries(formData.entries());
-        if (!product.title || !product.description || !product.price || !product.discountPercentage || !product.rating || !product.stock || !product.brand || !product.category) {
+        console.log(typeof(price))
+        product.price = parseInt(product.price)
+        console.log(typeof(price))
+        product.discount = parseInt(product.discount)
+        product.rating = parseInt(product.rating)
+        product.stock = parseInt(product.stock)
+        if (!product.title || !product.description || !product.price || !product.discount || !product.rating || !product.stock || !product.brand || !product.category) {
             console.log("Please Provide All Required Fields!");
             setErrorMessage(
                 <div class="alert alert-warning" role="alert">
@@ -170,9 +176,9 @@ function ProductForm(props) {
             return;
         }
 
-        if (props.product.id) {
-            fetch("https://dummyjson.com/products/" + props.product.id, {
-                method: "PATCH",
+        if (props.product._id) {
+            fetch("http://localhost:3000/product/updatebyid/" + props.product._id, {
+                method: "PUT",
                 headers: {
                     "Content-Type": "application/json",
                 },
@@ -216,7 +222,7 @@ function ProductForm(props) {
         // }
         else {
             try {
-                const response = await axios.post("https://dummyjson.com/products/add", product, {
+                const response = await axios.post("http://localhost:3000/product/newproduct", product, {
                     headers: {
                         "Content-Type": "application/json",
                     },
@@ -234,7 +240,7 @@ function ProductForm(props) {
     }
     return (
         <>
-            <h2 className="text-center mb-3">{props.product.id ? "Edit Product" : "Create New Product"}</h2>
+            <h2 className="text-center mb-3">{props.product._id ? "Edit Product" : "Create New Product"}</h2>
 
             <div className="row">
 
@@ -242,10 +248,10 @@ function ProductForm(props) {
                     {errorMessage}
                     <form onSubmit={(event) => handleSubmit(event)}>
 
-                        {props.product.id && <div className="row mb-3">
+                        {props.product._id && <div className="row mb-3">
                             <label className="col-sm-4 col-form-label">ID</label>
                             <div className="col-sm-8">
-                                <input readOnly className="form-control-plaintext" name="id" defaultValue={props.product.id} />
+                                <input readOnly className="form-control-plaintext" name="_id" defaultValue={props.product._id} />
                             </div></div>}
                         <div className="row mb-3">
                             <label className="col-sm-4 col-form-label">Title</label>
@@ -261,12 +267,11 @@ function ProductForm(props) {
                             <label className="col-sm-4 col-form-label">Price</label>
                             <div className="col-sm-8">
                                 <input className="form-control" name="price" defaultValue={props.product.price} />
-
                             </div></div>
                         <div className="row mb-3">
-                            <label className="col-sm-4 col-form-label">DiscountPercentage</label>
+                            <label className="col-sm-4 col-form-label">Discount</label>
                             <div className="col-sm-8">
-                                <input className="form-control" name="discountPercentage" defaultValue={props.product.discountPercentage} />
+                                <input className="form-control" name="discount" defaultValue={props.product.discount} />
                             </div></div>
                         <div className="row mb-3">
                             <label className="col-sm-4 col-form-label">Rating</label>
